@@ -5,27 +5,27 @@
       "_id": "USR-MGR-001",
       "name": "System Manager",
       "email": "manager@example.com",
-      "passwordHash": "$2b$10$o4AmG5lD2wRTqJz1mH11u.8Vr7CxVpaVb7m4kA2jxtgTfgXnjRlle",
+      "passwordHash": "$2b$10$sSC3W6Jupr1g4pfEK/6rXuNm2jGOyKwezMgkw2wTXgQmXseiiVKJi",
       "role": "SYSTEM_MANAGER",
-      "createdAt": "2026-08-12T16:34:16.120Z"
+      "createdAt": "2026-08-13T05:44:43.061Z"
     },
     {
       "id": "USR-NORM-001",
       "_id": "USR-NORM-001",
       "name": "Alice Trader",
       "email": "user@example.com",
-      "passwordHash": "$2b$10$o4AmG5lD2wRTqJz1mH11u.o72ooIiVzM5JLa4AlUiiy6Fqqbz5D0q",
+      "passwordHash": "$2b$10$sSC3W6Jupr1g4pfEK/6rXu..31m0I8NR7q8KTZu4jdzMynRDJH75K",
       "role": "USER",
-      "createdAt": "2026-09-01T16:34:16.121Z"
+      "createdAt": "2026-09-02T05:44:43.061Z"
     },
     {
       "id": "USR-NORM-002",
       "_id": "USR-NORM-002",
       "name": "Bob Investor",
       "email": "trader2@example.com",
-      "passwordHash": "$2b$10$o4AmG5lD2wRTqJz1mH11u.o72ooIiVzM5JLa4AlUiiy6Fqqbz5D0q",
+      "passwordHash": "$2b$10$sSC3W6Jupr1g4pfEK/6rXu..31m0I8NR7q8KTZu4jdzMynRDJH75K",
       "role": "USER",
-      "createdAt": "2026-09-06T16:34:16.121Z"
+      "createdAt": "2026-09-07T05:44:43.061Z"
     }
   ],
   "accounts": [
@@ -36,25 +36,25 @@
       "totalBalance": 100000,
       "availableBalance": 100000,
       "frozenBalance": 0,
-      "updatedAt": "2026-09-11T16:34:16.121Z"
+      "updatedAt": "2026-09-12T05:44:43.061Z"
     },
     {
       "id": "ACC-NORM-001",
       "_id": "ACC-NORM-001",
       "userId": "USR-NORM-001",
-      "totalBalance": 50000,
-      "availableBalance": 4000,
-      "frozenBalance": 46000,
-      "updatedAt": "2026-09-11T16:54:26.571Z"
+      "totalBalance": 47000,
+      "availableBalance": 39000,
+      "frozenBalance": 8000,
+      "updatedAt": "2026-09-12T05:44:43.237Z"
     },
     {
       "id": "ACC-NORM-002",
       "_id": "ACC-NORM-002",
       "userId": "USR-NORM-002",
-      "totalBalance": 50000,
-      "availableBalance": 50000,
+      "totalBalance": 53000,
+      "availableBalance": 53000,
       "frozenBalance": 0,
-      "updatedAt": "2026-09-11T16:35:15.798Z"
+      "updatedAt": "2026-09-12T05:44:43.236Z"
     }
   ],
   "stocks": [
@@ -64,7 +64,7 @@
       "name": "Apple Inc.",
       "fallingLimit": 95,
       "risingLimit": 105,
-      "createdAt": "2026-09-11T16:34:16.122Z"
+      "createdAt": "2026-09-12T05:44:43.062Z"
     },
     {
       "stockId": "MSFT",
@@ -72,7 +72,7 @@
       "name": "Microsoft Corp.",
       "fallingLimit": 200,
       "risingLimit": 230,
-      "createdAt": "2026-09-11T16:34:16.122Z"
+      "createdAt": "2026-09-12T05:44:43.062Z"
     },
     {
       "stockId": "GOOG",
@@ -80,7 +80,7 @@
       "name": "Alphabet Inc.",
       "fallingLimit": 140,
       "risingLimit": 165,
-      "createdAt": "2026-09-11T16:34:16.122Z"
+      "createdAt": "2026-09-12T05:44:43.062Z"
     },
     {
       "stockId": "TSLA",
@@ -88,7 +88,7 @@
       "name": "Tesla Inc.",
       "fallingLimit": 180,
       "risingLimit": 220,
-      "createdAt": "2026-09-11T16:34:16.122Z"
+      "createdAt": "2026-09-12T05:44:43.062Z"
     }
   ],
   "instructions": [
@@ -101,11 +101,11 @@
       "quantity": 50,
       "remainingQuantity": 50,
       "respectedPrice": 100,
-      "timestamp": "2026-09-11T16:04:16.122Z",
+      "timestamp": "2026-09-12T05:14:43.062Z",
       "status": "PENDING",
       "frozenAmount": 5000,
-      "createdAt": "2026-09-11T16:34:16.122Z",
-      "updatedAt": "2026-09-11T16:34:16.122Z"
+      "createdAt": "2026-09-12T05:44:43.062Z",
+      "updatedAt": "2026-09-12T05:44:43.062Z"
     },
     {
       "id": "INST-DEMO-002",
@@ -116,11 +116,11 @@
       "quantity": 30,
       "remainingQuantity": 30,
       "respectedPrice": 100,
-      "timestamp": "2026-09-11T16:19:16.122Z",
+      "timestamp": "2026-09-12T05:29:43.062Z",
       "status": "PENDING",
       "frozenAmount": 3000,
-      "createdAt": "2026-09-11T16:34:16.122Z",
-      "updatedAt": "2026-09-11T16:34:16.122Z"
+      "createdAt": "2026-09-12T05:44:43.062Z",
+      "updatedAt": "2026-09-12T05:44:43.062Z"
     },
     {
       "id": "INST-DEMO-003",
@@ -131,11 +131,11 @@
       "quantity": 40,
       "remainingQuantity": 40,
       "respectedPrice": 102,
-      "timestamp": "2026-09-11T16:14:16.122Z",
+      "timestamp": "2026-09-12T05:24:43.062Z",
       "status": "PENDING",
       "frozenAmount": 0,
-      "createdAt": "2026-09-11T16:34:16.122Z",
-      "updatedAt": "2026-09-11T16:34:16.122Z"
+      "createdAt": "2026-09-12T05:44:43.062Z",
+      "updatedAt": "2026-09-12T05:44:43.062Z"
     },
     {
       "id": "INST-OUTDATED-004",
@@ -146,12 +146,12 @@
       "quantity": 10,
       "remainingQuantity": 0,
       "respectedPrice": 205,
-      "timestamp": "2026-09-10T04:34:16.122Z",
+      "timestamp": "2026-09-10T17:44:43.062Z",
       "status": "EXPIRED",
       "frozenAmount": 2050,
-      "createdAt": "2026-09-11T16:34:16.122Z",
-      "updatedAt": "2026-09-11T16:35:15.799Z",
-      "expiredAt": "2026-09-11T16:35:15.799Z"
+      "createdAt": "2026-09-12T05:44:43.062Z",
+      "updatedAt": "2026-09-12T05:44:43.237Z",
+      "expiredAt": "2026-09-12T05:44:43.237Z"
     },
     {
       "id": "INST-HIST-005",
@@ -162,11 +162,11 @@
       "quantity": 20,
       "remainingQuantity": 0,
       "respectedPrice": 150,
-      "timestamp": "2026-09-11T14:34:16.122Z",
+      "timestamp": "2026-09-12T03:44:43.062Z",
       "status": "TOTALLY_FINISHED",
       "frozenAmount": 3000,
-      "createdAt": "2026-09-11T16:34:16.123Z",
-      "updatedAt": "2026-09-11T16:34:16.123Z"
+      "createdAt": "2026-09-12T05:44:43.063Z",
+      "updatedAt": "2026-09-12T05:44:43.063Z"
     },
     {
       "id": "INST-HIST-006",
@@ -177,176 +177,73 @@
       "quantity": 20,
       "remainingQuantity": 0,
       "respectedPrice": 150,
-      "timestamp": "2026-09-11T14:34:16.122Z",
+      "timestamp": "2026-09-12T03:44:43.062Z",
       "status": "TOTALLY_FINISHED",
       "frozenAmount": 0,
-      "createdAt": "2026-09-11T16:34:16.123Z",
-      "updatedAt": "2026-09-11T16:34:16.123Z"
+      "createdAt": "2026-09-12T05:44:43.063Z",
+      "updatedAt": "2026-09-12T05:44:43.063Z"
     },
     {
-      "id": "INST-1789145636634-963",
-      "_id": "INST-1789145636634-963",
+      "id": "INST-1789191883088-393",
+      "_id": "INST-1789191883088-393",
+      "userId": "USR-NORM-001",
+      "stockId": "MSFT",
+      "type": "BUY",
+      "quantity": 5,
+      "remainingQuantity": 0,
+      "respectedPrice": 210,
+      "timestamp": "2026-09-12T05:44:43.088Z",
+      "status": "CANCELLED",
+      "frozenAmount": 1050,
+      "createdAt": "2026-09-12T05:44:43.088Z",
+      "updatedAt": "2026-09-12T05:44:43.099Z",
+      "cancelledAt": "2026-09-12T05:44:43.099Z"
+    },
+    {
+      "id": "INST-1789191883215-649",
+      "_id": "INST-1789191883215-649",
+      "userId": "USR-NORM-002",
+      "stockId": "TSLA",
+      "type": "SELL",
+      "quantity": 15,
+      "remainingQuantity": 0,
+      "respectedPrice": 200,
+      "timestamp": "2026-09-12T05:44:43.214Z",
+      "status": "TOTALLY_FINISHED",
+      "frozenAmount": 0,
+      "createdAt": "2026-09-12T05:44:43.215Z",
+      "updatedAt": "2026-09-12T05:44:43.221Z"
+    },
+    {
+      "id": "INST-1789191883220-464",
+      "_id": "INST-1789191883220-464",
+      "userId": "USR-NORM-001",
+      "stockId": "TSLA",
+      "type": "BUY",
+      "quantity": 15,
+      "remainingQuantity": 0,
+      "respectedPrice": 205,
+      "timestamp": "2026-09-12T05:44:43.220Z",
+      "status": "TOTALLY_FINISHED",
+      "frozenAmount": 3075,
+      "createdAt": "2026-09-12T05:44:43.220Z",
+      "updatedAt": "2026-09-12T05:44:43.221Z"
+    },
+    {
+      "id": "INST-1789191883232-623",
+      "_id": "INST-1789191883232-623",
       "userId": "USR-NORM-001",
       "stockId": "AAPL",
       "type": "BUY",
-      "quantity": 10,
-      "remainingQuantity": 10,
-      "respectedPrice": 100,
-      "timestamp": "2026-09-11T16:53:56.633Z",
-      "status": "PENDING",
-      "frozenAmount": 1000,
-      "createdAt": "2026-09-11T16:53:56.634Z",
-      "updatedAt": "2026-09-11T16:53:56.634Z"
-    },
-    {
-      "id": "INST-1789145645795-312",
-      "_id": "INST-1789145645795-312",
-      "userId": "USR-NORM-001",
-      "stockId": "AAPL",
-      "type": "BUY",
-      "quantity": 10,
-      "remainingQuantity": 10,
-      "respectedPrice": 100,
-      "timestamp": "2026-09-11T16:54:05.795Z",
-      "status": "PENDING",
-      "frozenAmount": 1000,
-      "createdAt": "2026-09-11T16:54:05.795Z",
-      "updatedAt": "2026-09-11T16:54:05.795Z"
-    },
-    {
-      "id": "INST-1789145647048-371",
-      "_id": "INST-1789145647048-371",
-      "userId": "USR-NORM-001",
-      "stockId": "AAPL",
-      "type": "BUY",
-      "quantity": 10,
-      "remainingQuantity": 10,
-      "respectedPrice": 100,
-      "timestamp": "2026-09-11T16:54:07.047Z",
-      "status": "PENDING",
-      "frozenAmount": 1000,
-      "createdAt": "2026-09-11T16:54:07.048Z",
-      "updatedAt": "2026-09-11T16:54:07.048Z"
-    },
-    {
-      "id": "INST-1789145647880-585",
-      "_id": "INST-1789145647880-585",
-      "userId": "USR-NORM-001",
-      "stockId": "AAPL",
-      "type": "BUY",
-      "quantity": 10,
-      "remainingQuantity": 10,
-      "respectedPrice": 100,
-      "timestamp": "2026-09-11T16:54:07.879Z",
-      "status": "PENDING",
-      "frozenAmount": 1000,
-      "createdAt": "2026-09-11T16:54:07.880Z",
-      "updatedAt": "2026-09-11T16:54:07.880Z"
-    },
-    {
-      "id": "INST-1789145648562-225",
-      "_id": "INST-1789145648562-225",
-      "userId": "USR-NORM-001",
-      "stockId": "AAPL",
-      "type": "BUY",
-      "quantity": 10,
-      "remainingQuantity": 10,
-      "respectedPrice": 100,
-      "timestamp": "2026-09-11T16:54:08.562Z",
-      "status": "PENDING",
-      "frozenAmount": 1000,
-      "createdAt": "2026-09-11T16:54:08.562Z",
-      "updatedAt": "2026-09-11T16:54:08.562Z"
-    },
-    {
-      "id": "INST-1789145649149-73",
-      "_id": "INST-1789145649149-73",
-      "userId": "USR-NORM-001",
-      "stockId": "AAPL",
-      "type": "BUY",
-      "quantity": 10,
-      "remainingQuantity": 10,
-      "respectedPrice": 100,
-      "timestamp": "2026-09-11T16:54:09.149Z",
-      "status": "PENDING",
-      "frozenAmount": 1000,
-      "createdAt": "2026-09-11T16:54:09.149Z",
-      "updatedAt": "2026-09-11T16:54:09.149Z"
-    },
-    {
-      "id": "INST-1789145649645-281",
-      "_id": "INST-1789145649645-281",
-      "userId": "USR-NORM-001",
-      "stockId": "AAPL",
-      "type": "BUY",
-      "quantity": 10,
-      "remainingQuantity": 10,
-      "respectedPrice": 100,
-      "timestamp": "2026-09-11T16:54:09.645Z",
-      "status": "PENDING",
-      "frozenAmount": 1000,
-      "createdAt": "2026-09-11T16:54:09.645Z",
-      "updatedAt": "2026-09-11T16:54:09.645Z"
-    },
-    {
-      "id": "INST-1789145650134-346",
-      "_id": "INST-1789145650134-346",
-      "userId": "USR-NORM-001",
-      "stockId": "AAPL",
-      "type": "BUY",
-      "quantity": 10,
-      "remainingQuantity": 10,
-      "respectedPrice": 100,
-      "timestamp": "2026-09-11T16:54:10.134Z",
-      "status": "PENDING",
-      "frozenAmount": 1000,
-      "createdAt": "2026-09-11T16:54:10.134Z",
-      "updatedAt": "2026-09-11T16:54:10.135Z"
-    },
-    {
-      "id": "INST-1789145659625-395",
-      "_id": "INST-1789145659625-395",
-      "userId": "USR-NORM-001",
-      "stockId": "AAPL",
-      "type": "BUY",
-      "quantity": 100,
-      "remainingQuantity": 100,
-      "respectedPrice": 100,
-      "timestamp": "2026-09-11T16:54:19.624Z",
-      "status": "PENDING",
-      "frozenAmount": 10000,
-      "createdAt": "2026-09-11T16:54:19.625Z",
-      "updatedAt": "2026-09-11T16:54:19.625Z"
-    },
-    {
-      "id": "INST-1789145665068-914",
-      "_id": "INST-1789145665068-914",
-      "userId": "USR-NORM-001",
-      "stockId": "AAPL",
-      "type": "BUY",
-      "quantity": 100,
-      "remainingQuantity": 100,
-      "respectedPrice": 100,
-      "timestamp": "2026-09-11T16:54:25.068Z",
-      "status": "PENDING",
-      "frozenAmount": 10000,
-      "createdAt": "2026-09-11T16:54:25.068Z",
-      "updatedAt": "2026-09-11T16:54:25.068Z"
-    },
-    {
-      "id": "INST-1789145666572-253",
-      "_id": "INST-1789145666572-253",
-      "userId": "USR-NORM-001",
-      "stockId": "AAPL",
-      "type": "BUY",
-      "quantity": 100,
-      "remainingQuantity": 100,
-      "respectedPrice": 100,
-      "timestamp": "2026-09-11T16:54:26.571Z",
-      "status": "PENDING",
-      "frozenAmount": 10000,
-      "createdAt": "2026-09-11T16:54:26.572Z",
-      "updatedAt": "2026-09-11T16:54:26.572Z"
+      "quantity": 4,
+      "remainingQuantity": 0,
+      "respectedPrice": 96,
+      "timestamp": "2026-09-10T17:44:43.227Z",
+      "status": "EXPIRED",
+      "frozenAmount": 384,
+      "createdAt": "2026-09-12T05:44:43.232Z",
+      "updatedAt": "2026-09-12T05:44:43.237Z",
+      "expiredAt": "2026-09-12T05:44:43.237Z"
     }
   ],
   "trades": [
@@ -360,307 +257,184 @@
       "stockId": "GOOG",
       "quantity": 20,
       "price": 150,
-      "timestamp": "2026-09-11T14:34:16.122Z"
+      "timestamp": "2026-09-12T03:44:43.062Z"
+    },
+    {
+      "id": "TRD-1789191883221-174",
+      "_id": "TRD-1789191883221-174",
+      "buyInstructionId": "INST-1789191883220-464",
+      "sellInstructionId": "INST-1789191883215-649",
+      "buyerUserId": "USR-NORM-001",
+      "sellerUserId": "USR-NORM-002",
+      "stockId": "TSLA",
+      "quantity": 15,
+      "price": 200,
+      "timestamp": "2026-09-12T05:44:43.220Z"
     }
   ],
   "logs": [
     {
-      "id": "LOG-1789144456123-395",
+      "id": "LOG-1789191883063-604",
       "action": "SYSTEM_SEEDED",
       "details": {
         "usersSeeded": 3,
         "stocksSeeded": 4,
         "instructionsSeeded": 6
       },
-      "timestamp": "2026-09-11T16:34:16.123Z"
+      "timestamp": "2026-09-12T05:44:43.063Z"
     },
     {
-      "id": "LOG-1789144515799-555",
+      "id": "LOG-1789191883070-49",
+      "action": "INSTRUCTION_REJECTED",
+      "details": {
+        "reason": "RISING_LIMIT_EXCEEDED",
+        "userId": "USR-NORM-001",
+        "stockId": "AAPL",
+        "price": 120,
+        "limit": 105
+      },
+      "timestamp": "2026-09-12T05:44:43.070Z"
+    },
+    {
+      "id": "LOG-1789191883075-577",
+      "action": "INSTRUCTION_REJECTED",
+      "details": {
+        "reason": "FALLING_LIMIT_EXCEEDED",
+        "userId": "USR-NORM-001",
+        "stockId": "AAPL",
+        "price": 80,
+        "limit": 95
+      },
+      "timestamp": "2026-09-12T05:44:43.075Z"
+    },
+    {
+      "id": "LOG-1789191883088-703",
+      "action": "INSTRUCTION_PRETREATED",
+      "details": {
+        "userId": "USR-NORM-001",
+        "stockId": "MSFT",
+        "type": "BUY",
+        "quantity": 5,
+        "respectedPrice": 210,
+        "frozenAmount": 1050
+      },
+      "timestamp": "2026-09-12T05:44:43.088Z"
+    },
+    {
+      "id": "LOG-1789191883099-917",
+      "action": "INSTRUCTION_CANCELLED",
+      "details": {
+        "instructionId": "INST-1789191883088-393",
+        "userId": "USR-NORM-001",
+        "stockId": "MSFT",
+        "cancelledQuantity": 5,
+        "releasedFunds": 1050
+      },
+      "timestamp": "2026-09-12T05:44:43.099Z"
+    },
+    {
+      "id": "LOG-1789191883208-867",
+      "action": "USER_LOGIN",
+      "details": {
+        "userId": "USR-NORM-002",
+        "email": "trader2@example.com",
+        "role": "USER"
+      },
+      "timestamp": "2026-09-12T05:44:43.208Z"
+    },
+    {
+      "id": "LOG-1789191883214-421",
+      "action": "INSTRUCTION_PRETREATED",
+      "details": {
+        "userId": "USR-NORM-002",
+        "stockId": "TSLA",
+        "type": "SELL",
+        "quantity": 15,
+        "respectedPrice": 200,
+        "frozenAmount": 0
+      },
+      "timestamp": "2026-09-12T05:44:43.214Z"
+    },
+    {
+      "id": "LOG-1789191883220-436",
+      "action": "INSTRUCTION_PRETREATED",
+      "details": {
+        "userId": "USR-NORM-001",
+        "stockId": "TSLA",
+        "type": "BUY",
+        "quantity": 15,
+        "respectedPrice": 205,
+        "frozenAmount": 3075
+      },
+      "timestamp": "2026-09-12T05:44:43.220Z"
+    },
+    {
+      "id": "LOG-1789191883221-27",
+      "action": "TRADE_EXECUTED",
+      "details": {
+        "tradeId": "TRD-1789191883221-174",
+        "stockId": "TSLA",
+        "buyInstructionId": "INST-1789191883220-464",
+        "sellInstructionId": "INST-1789191883215-649",
+        "quantity": 15,
+        "price": 200,
+        "buyerStatus": "TOTALLY_FINISHED",
+        "sellerStatus": "TOTALLY_FINISHED"
+      },
+      "timestamp": "2026-09-12T05:44:43.221Z"
+    },
+    {
+      "id": "LOG-1789191883232-366",
+      "action": "INSTRUCTION_PRETREATED",
+      "details": {
+        "userId": "USR-NORM-001",
+        "stockId": "AAPL",
+        "type": "BUY",
+        "quantity": 4,
+        "respectedPrice": 96,
+        "frozenAmount": 384
+      },
+      "timestamp": "2026-09-12T05:44:43.232Z"
+    },
+    {
+      "id": "LOG-1789191883237-785",
       "action": "INSTRUCTION_EXPIRED",
       "details": {
         "instructionId": "INST-OUTDATED-004",
         "userId": "USR-NORM-002",
         "stockId": "MSFT",
-        "ageHours": "36.02"
+        "ageHours": "36.00"
       },
-      "timestamp": "2026-09-11T16:35:15.799Z"
+      "timestamp": "2026-09-12T05:44:43.237Z"
     },
     {
-      "id": "LOG-1789145479084-887",
-      "action": "USER_LOGIN",
+      "id": "LOG-1789191883237-545",
+      "action": "INSTRUCTION_EXPIRED",
       "details": {
-        "userId": "USR-NORM-001",
-        "email": "user@example.com",
-        "role": "USER"
-      },
-      "timestamp": "2026-09-11T16:51:19.084Z"
-    },
-    {
-      "id": "LOG-1789145636634-61",
-      "action": "INSTRUCTION_PRETREATED",
-      "details": {
+        "instructionId": "INST-1789191883232-623",
         "userId": "USR-NORM-001",
         "stockId": "AAPL",
-        "type": "BUY",
-        "quantity": 10,
-        "respectedPrice": 100,
-        "frozenAmount": 1000
+        "ageHours": "36.00"
       },
-      "timestamp": "2026-09-11T16:53:56.634Z"
+      "timestamp": "2026-09-12T05:44:43.237Z"
     },
     {
-      "id": "LOG-1789145645795-827",
-      "action": "INSTRUCTION_PRETREATED",
+      "id": "LOG-1789191883253-959",
+      "action": "SYSTEM_SUSPENSION_TOGGLED",
       "details": {
-        "userId": "USR-NORM-001",
-        "stockId": "AAPL",
-        "type": "BUY",
-        "quantity": 10,
-        "respectedPrice": 100,
-        "frozenAmount": 1000
+        "operationsSuspended": true,
+        "managerId": "USR-MGR-001"
       },
-      "timestamp": "2026-09-11T16:54:05.795Z"
+      "timestamp": "2026-09-12T05:44:43.253Z"
     },
     {
-      "id": "LOG-1789145647048-775",
-      "action": "INSTRUCTION_PRETREATED",
+      "id": "LOG-1789191883263-605",
+      "action": "SYSTEM_SUSPENSION_TOGGLED",
       "details": {
-        "userId": "USR-NORM-001",
-        "stockId": "AAPL",
-        "type": "BUY",
-        "quantity": 10,
-        "respectedPrice": 100,
-        "frozenAmount": 1000
+        "operationsSuspended": false,
+        "managerId": "USR-MGR-001"
       },
-      "timestamp": "2026-09-11T16:54:07.048Z"
-    },
-    {
-      "id": "LOG-1789145647879-354",
-      "action": "INSTRUCTION_PRETREATED",
-      "details": {
-        "userId": "USR-NORM-001",
-        "stockId": "AAPL",
-        "type": "BUY",
-        "quantity": 10,
-        "respectedPrice": 100,
-        "frozenAmount": 1000
-      },
-      "timestamp": "2026-09-11T16:54:07.879Z"
-    },
-    {
-      "id": "LOG-1789145648562-331",
-      "action": "INSTRUCTION_PRETREATED",
-      "details": {
-        "userId": "USR-NORM-001",
-        "stockId": "AAPL",
-        "type": "BUY",
-        "quantity": 10,
-        "respectedPrice": 100,
-        "frozenAmount": 1000
-      },
-      "timestamp": "2026-09-11T16:54:08.562Z"
-    },
-    {
-      "id": "LOG-1789145649149-791",
-      "action": "INSTRUCTION_PRETREATED",
-      "details": {
-        "userId": "USR-NORM-001",
-        "stockId": "AAPL",
-        "type": "BUY",
-        "quantity": 10,
-        "respectedPrice": 100,
-        "frozenAmount": 1000
-      },
-      "timestamp": "2026-09-11T16:54:09.149Z"
-    },
-    {
-      "id": "LOG-1789145649645-542",
-      "action": "INSTRUCTION_PRETREATED",
-      "details": {
-        "userId": "USR-NORM-001",
-        "stockId": "AAPL",
-        "type": "BUY",
-        "quantity": 10,
-        "respectedPrice": 100,
-        "frozenAmount": 1000
-      },
-      "timestamp": "2026-09-11T16:54:09.645Z"
-    },
-    {
-      "id": "LOG-1789145650134-579",
-      "action": "INSTRUCTION_PRETREATED",
-      "details": {
-        "userId": "USR-NORM-001",
-        "stockId": "AAPL",
-        "type": "BUY",
-        "quantity": 10,
-        "respectedPrice": 100,
-        "frozenAmount": 1000
-      },
-      "timestamp": "2026-09-11T16:54:10.134Z"
-    },
-    {
-      "id": "LOG-1789145659625-9",
-      "action": "INSTRUCTION_PRETREATED",
-      "details": {
-        "userId": "USR-NORM-001",
-        "stockId": "AAPL",
-        "type": "BUY",
-        "quantity": 100,
-        "respectedPrice": 100,
-        "frozenAmount": 10000
-      },
-      "timestamp": "2026-09-11T16:54:19.625Z"
-    },
-    {
-      "id": "LOG-1789145665068-31",
-      "action": "INSTRUCTION_PRETREATED",
-      "details": {
-        "userId": "USR-NORM-001",
-        "stockId": "AAPL",
-        "type": "BUY",
-        "quantity": 100,
-        "respectedPrice": 100,
-        "frozenAmount": 10000
-      },
-      "timestamp": "2026-09-11T16:54:25.068Z"
-    },
-    {
-      "id": "LOG-1789145666572-1",
-      "action": "INSTRUCTION_PRETREATED",
-      "details": {
-        "userId": "USR-NORM-001",
-        "stockId": "AAPL",
-        "type": "BUY",
-        "quantity": 100,
-        "respectedPrice": 100,
-        "frozenAmount": 10000
-      },
-      "timestamp": "2026-09-11T16:54:26.572Z"
-    },
-    {
-      "id": "LOG-1789145667187-185",
-      "action": "INSTRUCTION_REJECTED",
-      "details": {
-        "reason": "INSUFFICIENT_FUNDS",
-        "userId": "USR-NORM-001",
-        "requiredFunds": 10000,
-        "availableBalance": 4000
-      },
-      "timestamp": "2026-09-11T16:54:27.187Z"
-    },
-    {
-      "id": "LOG-1789145669370-104",
-      "action": "INSTRUCTION_REJECTED",
-      "details": {
-        "reason": "INSUFFICIENT_FUNDS",
-        "userId": "USR-NORM-001",
-        "requiredFunds": 10000,
-        "availableBalance": 4000
-      },
-      "timestamp": "2026-09-11T16:54:29.370Z"
-    },
-    {
-      "id": "LOG-1789145704200-494",
-      "action": "USER_LOGIN",
-      "details": {
-        "userId": "USR-MGR-001",
-        "email": "manager@example.com",
-        "role": "SYSTEM_MANAGER"
-      },
-      "timestamp": "2026-09-11T16:55:04.200Z"
-    },
-    {
-      "id": "LOG-1789145757619-525",
-      "action": "INSTRUCTION_REJECTED",
-      "details": {
-        "reason": "FALLING_LIMIT_EXCEEDED",
-        "userId": "USR-MGR-001",
-        "stockId": "TSLA",
-        "price": 100,
-        "limit": 180
-      },
-      "timestamp": "2026-09-11T16:55:57.619Z"
-    },
-    {
-      "id": "LOG-1789145758143-711",
-      "action": "INSTRUCTION_REJECTED",
-      "details": {
-        "reason": "FALLING_LIMIT_EXCEEDED",
-        "userId": "USR-MGR-001",
-        "stockId": "TSLA",
-        "price": 100,
-        "limit": 180
-      },
-      "timestamp": "2026-09-11T16:55:58.143Z"
-    },
-    {
-      "id": "LOG-1789145758644-603",
-      "action": "INSTRUCTION_REJECTED",
-      "details": {
-        "reason": "FALLING_LIMIT_EXCEEDED",
-        "userId": "USR-MGR-001",
-        "stockId": "TSLA",
-        "price": 100,
-        "limit": 180
-      },
-      "timestamp": "2026-09-11T16:55:58.644Z"
-    },
-    {
-      "id": "LOG-1789145759231-130",
-      "action": "INSTRUCTION_REJECTED",
-      "details": {
-        "reason": "FALLING_LIMIT_EXCEEDED",
-        "userId": "USR-MGR-001",
-        "stockId": "TSLA",
-        "price": 100,
-        "limit": 180
-      },
-      "timestamp": "2026-09-11T16:55:59.231Z"
-    },
-    {
-      "id": "LOG-1789145759788-558",
-      "action": "INSTRUCTION_REJECTED",
-      "details": {
-        "reason": "FALLING_LIMIT_EXCEEDED",
-        "userId": "USR-MGR-001",
-        "stockId": "TSLA",
-        "price": 100,
-        "limit": 180
-      },
-      "timestamp": "2026-09-11T16:55:59.788Z"
-    },
-    {
-      "id": "LOG-1789145760351-386",
-      "action": "INSTRUCTION_REJECTED",
-      "details": {
-        "reason": "FALLING_LIMIT_EXCEEDED",
-        "userId": "USR-MGR-001",
-        "stockId": "TSLA",
-        "price": 100,
-        "limit": 180
-      },
-      "timestamp": "2026-09-11T16:56:00.351Z"
-    },
-    {
-      "id": "LOG-1789146118863-322",
-      "action": "USER_LOGIN",
-      "details": {
-        "userId": "USR-MGR-001",
-        "email": "manager@example.com",
-        "role": "SYSTEM_MANAGER"
-      },
-      "timestamp": "2026-09-11T17:01:58.863Z"
-    },
-    {
-      "id": "LOG-1789146121793-682",
-      "action": "USER_LOGIN",
-      "details": {
-        "userId": "USR-NORM-001",
-        "email": "user@example.com",
-        "role": "USER"
-      },
-      "timestamp": "2026-09-11T17:02:01.793Z"
+      "timestamp": "2026-09-12T05:44:43.263Z"
     }
   ],
   "systemConfig": {

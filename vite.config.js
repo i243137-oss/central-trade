@@ -4,6 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { defineConfig } from 'vite';
 import { app } from './server/app.js';
+import dbManager from './server/services/database/ManagementOfDatabase.js';
 import { seedDatabase } from './server/seed/seedData.js';
 import { startOutdatedInstructionJob } from './server/jobs/outdatedInstructionJob.js';
 
@@ -18,9 +19,11 @@ export default defineConfig(() => {
       {
         name: 'cts-api-middleware',
         configureServer(server) {
-          // In dev mode, seed database and run background sweep
-          seedDatabase(false);
-          startOutdatedInstructionJob();
+          // In dev mode, attempt Mongo connection, seed database and run background sweep
+          dbManager.connectMongo().finally(() => {
+            seedDatabase(false);
+            startOutdatedInstructionJob();
+          });
 
           server.middlewares.use((req, res, next) => {
             if (req.url && req.url.startsWith('/api')) {

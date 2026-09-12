@@ -2,11 +2,15 @@ import path from 'path';
 import express from 'express';
 import { app } from './app.js';
 import config from './config/config.js';
+import dbManager from './services/database/ManagementOfDatabase.js';
 import { seedDatabase } from './seed/seedData.js';
 import { startOutdatedInstructionJob } from './jobs/outdatedInstructionJob.js';
 
 async function startServer() {
   try {
+    // 0. Connect to MongoDB if available
+    await dbManager.connectMongo();
+
     // 1. Seed database with initial academic demonstration data
     await seedDatabase(false);
 
