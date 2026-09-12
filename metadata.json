@@ -1,0 +1,7 @@
+{
+  "name": "Central Trading System",
+  "description": "Central Trading System (CTS) academic simulation based on the 2007 Software Requirements Specification, implementing instruction pretreatment, matching, fund freezing, and trading management.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
