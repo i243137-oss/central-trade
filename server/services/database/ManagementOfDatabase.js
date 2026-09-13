@@ -116,17 +116,22 @@ class ManagementOfDatabase {
 
   /** Settle trade funds between buyer and seller. */
   async settleTradeFunds(buyerUserId, sellerUserId, executedAmount, respectedAmount) {
+    return this._settleTradeFunds(buyerUserId, sellerUserId, executedAmount, respectedAmount, null);
+  }
+
+  async _settleTradeFunds(buyerUserId, sellerUserId, executedAmount, respectedAmount, session) {
     const exec = Number(executedAmount);
     const resp = Number(respectedAmount || executedAmount);
     const refund = resp - exec;
+    const opts = session ? { session } : {};
     await Account.findOneAndUpdate({ userId: buyerUserId }, {
       $inc: { totalBalance: -exec, frozenBalance: -resp, availableBalance: refund > 0 ? refund : 0 },
       $set: { updatedAt: new Date() }
-    });
+    }, opts);
     await Account.findOneAndUpdate({ userId: sellerUserId }, {
       $inc: { totalBalance: exec, availableBalance: exec },
       $set: { updatedAt: new Date() }
-    });
+    }, opts);
   }
 
   // --- STOCK OPERATIONS ---
@@ -193,7 +198,7 @@ class ManagementOfDatabase {
   }
 
   // --- TRADE OPERATIONS ---
-  async insertTrade(trade) {
+  async insertTrade(trade, session = null) {
     const id = trade.id || `TRD-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
     const record = {
       id, _id: id,
@@ -202,8 +207,65 @@ class ManagementOfDatabase {
       stockId: trade.stockId, quantity: Number(trade.quantity),
       price: Number(trade.price), timestamp: trade.timestamp || new Date().toISOString()
     };
-    await Trade.create(record);
+    await Trade.create([record], session ? { session } : {});
     return record;
+  }
+
+  /**
+   * Execute a full trade settlement (R06/R11 concurrency review) as a single unit:
+   * insert the trade record, update both matched instructions, and settle both
+   * accounts.
+   *
+   * Uses a MongoDB (Mongoose) session transaction so that if any one write fails,
+   * none of the writes are applied — preventing partially-completed financial
+   * state (e.g. a trade recorded without the corresponding fund settlement).
+   *
+   * Transactions require a MongoDB replica set (or mongodb+srv Atlas cluster);
+   * a standalone `mongod` does not support them. If the connected deployment
+   * does not support transactions, this falls back to applying the same writes
+   * sequentially (matching the previous behavior) and logs a one-time warning,
+   * rather than crashing the trading engine.
+   */
+  async executeTradeSettlement({ trade, buyInstructionId, buyUpdate, sellInstructionId, sellUpdate, buyerUserId, sellerUserId, executedAmount, respectedAmount }) {
+    const session = await mongoose.startSession();
+    try {
+      let tradeRecord;
+      await session.withTransaction(async () => {
+        tradeRecord = await this.insertTrade(trade, session);
+        await Instruction.findOneAndUpdate(
+          { id: buyInstructionId },
+          { $set: { ...buyUpdate, updatedAt: new Date().toISOString() } },
+          { session }
+        );
+        await Instruction.findOneAndUpdate(
+          { id: sellInstructionId },
+          { $set: { ...sellUpdate, updatedAt: new Date().toISOString() } },
+          { session }
+        );
+        await this._settleTradeFunds(buyerUserId, sellerUserId, executedAmount, respectedAmount, session);
+      });
+      return tradeRecord;
+    } catch (err) {
+      const transactionsUnsupported = /Transaction numbers are only allowed on a replica set member|IllegalOperation|Transactions are not supported/i.test(err.message || '');
+      if (!transactionsUnsupported) {
+        throw err;
+      }
+      if (!this._warnedNoTransactions) {
+        console.warn(
+          '[ManagementOfDatabase] MongoDB transactions are not supported by this deployment ' +
+          '(standalone mongod, not a replica set). Falling back to sequential writes for trade ' +
+          'settlement; cross-document atomicity is not guaranteed on this deployment.'
+        );
+        this._warnedNoTransactions = true;
+      }
+      const tradeRecord = await this.insertTrade(trade);
+      await this.updateInstruction(buyInstructionId, buyUpdate);
+      await this.updateInstruction(sellInstructionId, sellUpdate);
+      await this._settleTradeFunds(buyerUserId, sellerUserId, executedAmount, respectedAmount);
+      return tradeRecord;
+    } finally {
+      await session.endSession();
+    }
   }
 
   async getAllTrades() { return await Trade.find().lean(); }

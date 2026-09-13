@@ -38,10 +38,10 @@ The Central Trading System provides automated order pretreatment, continuous dou
 | **R03** | Matching Mechanism | `ManagementOfDealing.js`. Price-First then Time-First priority. Partial matching supported. |
 | **R04** | Price Limits | Checked in Pretreatment. Manager configures via `PATCH /api/stocks/:id/limits`. |
 | **R05** | Outdated Instructions | Background sweeper + manual `POST /api/manager/outdated-sweep`. |
-| **R06** | Fund Freezing | Atomic MongoDB `$inc` operations for concurrency safety. |
+| **R06** | Fund Freezing | Atomic MongoDB `$inc` operations for concurrency-safe freeze/release. Trade settlement (trade record + both instruction updates + both account updates) is applied as a single MongoDB transaction where the deployment supports one (replica set / Atlas); see Section 6 below. |
 | **R07** | Query Interface | `GET /api/queries/user` and `GET /api/queries/stock`. |
-| **R08** | Capacity-Conscious | Async Node.js, reusable MongoDB connection, indexed queries, pagination, centralized error handling. |
-| **R09** | Maintainability | Modular services, controllers, routes, Mongoose models following SRS CRC structure. |
+| **R08** | Capacity-Conscious | Async Node.js, reusable MongoDB connection, indexed queries (see Mongoose schemas in `server/models/`), centralized error handling. Capacity-conscious implementation; final acceptance requires targeted runtime evaluation because the SRS does not specify a numerical capacity threshold. |
+| **R09** | Maintainability | Modular services, controllers, routes, Mongoose models following SRS CRC structure (see Section 7). |
 | **R10** | Authorization | JWT auth + role middleware. `USER` and `SYSTEM_MANAGER` roles enforced on backend. |
 
 ---
@@ -86,22 +86,45 @@ and the application will NOT start.
 
 ## 4. Quick Start
 
+The frontend (Vite) and backend (Express) run as two separate processes in
+development. The frontend calls the backend at `/api`, which the Vite dev
+server proxies to `http://localhost:3000`.
+
+```text
+Frontend: Vite       → http://localhost:5173
+Backend:  Express    → http://localhost:3000  (MongoDB required)
+Frontend → Backend:  /api  (proxied by Vite to http://localhost:3000)
+```
+
 ```bash
 # 1. Install dependencies
 npm install
 
 # 2. Configure environment
 cp .env.example .env
-# Edit .env and set your MONGODB_URI
+# Edit .env and set your MONGODB_URI (and JWT_SECRET if desired)
 
-# 3. Start in development mode (frontend + backend)
+# 3. Terminal 1 — start the backend (connects to MongoDB, seeds demo data,
+#    starts the outdated-instruction sweeper, and serves the API on :3000)
+npm start
+# or, to auto-restart the backend on file changes during development:
+npm run dev:server
+
+# 4. Terminal 2 — start the frontend dev server
 npm run dev
 
-# 4. Or start production backend only
-npm start
-
 # 5. Open browser
-# http://localhost:3000
+# http://localhost:5173
+```
+
+The database is seeded automatically the first time the backend starts —
+there is no separate seed command to run.
+
+For a production-style run (single process, pre-built frontend):
+
+```bash
+npm run build   # builds the frontend into dist/
+npm start       # serves the built frontend and the API together on :3000
 ```
 
 ---
@@ -128,9 +151,29 @@ npm start
 ## 6. Verification & Testing
 
 ```bash
-# Run the automated end-to-end verification suite (requires server running)
+# Requires the backend to be running (npm start) on port 3000
 node server/test/systemVerification.js
 ```
+
+This script executes automated functional scenarios covering R01–R07 and R10
+against a running instance. It does **not** establish R08 (capacity) or R09
+(maintainability) — those require separate evaluation (runtime/load testing
+and SonarQube/code inspection respectively), as described in Section 2.
+
+### Trade settlement transaction (R06 concurrency)
+
+`ManagementOfDatabase.executeTradeSettlement()` wraps trade creation,
+instruction updates, and account settlement in a single Mongoose session
+transaction, so a mid-way failure does not leave the database with a trade
+recorded but funds unsettled (or vice versa). MongoDB transactions require a
+replica set (a local single-node replica set works fine for development, as
+does MongoDB Atlas). If the connected MongoDB is a plain standalone `mongod`,
+transactions are not available; the same writes are applied sequentially
+instead, and a one-time warning is logged. Concurrency behavior under load
+still needs to be exercised by the student as part of formal testing — this
+change makes the implementation correct-by-construction on a
+transaction-capable deployment, it does not itself constitute proof that
+concurrency has been tested.
 
 ---
 

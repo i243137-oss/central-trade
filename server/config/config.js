@@ -1,3 +1,10 @@
+import dotenv from 'dotenv';
+
+// Load variables from a local .env file (if present) into process.env.
+// Safe to call in every entry point (backend server, tests, etc.) — it
+// never overrides variables that are already set in the real environment.
+dotenv.config();
+
 // Validate required MONGODB_URI at import time
 if (!process.env.MONGODB_URI) {
   console.error(

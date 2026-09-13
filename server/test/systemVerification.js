@@ -284,8 +284,12 @@ async function runTests() {
   console.log('  PASSED: Trading operations resumed successfully.\n');
 
   console.log('========================================');
-  console.log(' ALL R01 - R10 REQUIREMENTS VERIFIED!   ');
+  console.log(' AUTOMATED FUNCTIONAL VERIFICATION COMPLETED');
   console.log('========================================');
+  console.log('R01-R07 and R10 automated functional scenarios were executed.\n');
+  console.log('R08 Capacity and R09 Maintainability require separate quality');
+  console.log('evaluation using the methods specified by the SE3002 assignment');
+  console.log('(e.g. runtime/load evaluation for R08, SonarQube/code inspection for R09).');
 }
 
 runTests().catch(err => {

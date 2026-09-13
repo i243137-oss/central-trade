@@ -110,41 +110,37 @@ class ManagementOfDealing {
           const buyerRespectedUnit = bestBuy.respectedPrice;
           const buyerRespectedTotal = tradeQuantity * buyerRespectedUnit;
 
-          // Record Trade
-          const tradeRecord = await dbManager.insertTrade({
-            buyInstructionId: bestBuy.id,
-            sellInstructionId: bestSell.id,
-            buyerUserId: bestBuy.userId,
-            sellerUserId: bestSell.userId,
-            stockId: currentStock,
-            quantity: tradeQuantity,
-            price: executionPrice,
-            timestamp: tradeTimestamp
-          });
-
-          // Update buyer instruction
+          // Compute post-trade instruction states
           bestBuy.remainingQuantity -= tradeQuantity;
           const buyerNewStatus = bestBuy.remainingQuantity === 0 ? 'TOTALLY_FINISHED' : 'PARTIALLY_FINISHED';
-          await dbManager.updateInstruction(bestBuy.id, {
-            remainingQuantity: bestBuy.remainingQuantity,
-            status: buyerNewStatus
-          });
 
-          // Update seller instruction
           bestSell.remainingQuantity -= tradeQuantity;
           const sellerNewStatus = bestSell.remainingQuantity === 0 ? 'TOTALLY_FINISHED' : 'PARTIALLY_FINISHED';
-          await dbManager.updateInstruction(bestSell.id, {
-            remainingQuantity: bestSell.remainingQuantity,
-            status: sellerNewStatus
-          });
 
-          // Settle Security Account balances (R06 Fund Freezing and settlement)
-          await dbManager.settleTradeFunds(
-            bestBuy.userId,
-            bestSell.userId,
-            executionTotal,
-            buyerRespectedTotal
-          );
+          // Record the trade, update both instructions, and settle both accounts as a
+          // single unit (R06/R11 concurrency review) — a MongoDB transaction is used
+          // when the deployment supports one, so no partial financial state is left
+          // behind if one of these writes fails.
+          const tradeRecord = await dbManager.executeTradeSettlement({
+            trade: {
+              buyInstructionId: bestBuy.id,
+              sellInstructionId: bestSell.id,
+              buyerUserId: bestBuy.userId,
+              sellerUserId: bestSell.userId,
+              stockId: currentStock,
+              quantity: tradeQuantity,
+              price: executionPrice,
+              timestamp: tradeTimestamp
+            },
+            buyInstructionId: bestBuy.id,
+            buyUpdate: { remainingQuantity: bestBuy.remainingQuantity, status: buyerNewStatus },
+            sellInstructionId: bestSell.id,
+            sellUpdate: { remainingQuantity: bestSell.remainingQuantity, status: sellerNewStatus },
+            buyerUserId: bestBuy.userId,
+            sellerUserId: bestSell.userId,
+            executedAmount: executionTotal,
+            respectedAmount: buyerRespectedTotal
+          });
 
           // Log execution (SRS CRC Card: Log results of business)
           await dbManager.insertLog('TRADE_EXECUTED', {
