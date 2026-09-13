@@ -1,0 +1,445 @@
+From ed98a6bce03a454c8ab5b5399d08a0e057c778b2 Mon Sep 17 00:00:00 2001
+From: Claude <claude@anthropic.local>
+Date: Sun, 13 Sep 2026 04:00:28 +0000
+Subject: [PATCH] Pre-freeze corrections: dev startup split, honest
+ verification message, atomic trade settlement
+
+- vite.config.js / package.json: split dev workflow into Vite frontend
+  (port 5173, proxying /api) and Express backend (port 3000, started
+  separately via npm start / npm run dev:server), matching the documented
+  clean dev configuration. Removed the embedded Express-in-Vite dev plugin.
+- server/config/config.js: load .env via dotenv in all entry points (this
+  was previously only done inside the removed Vite plugin, so .env loading
+  was silently broken for npm start / node server/server.js).
+- server/test/systemVerification.js: replaced the overclaiming
+  'ALL R01 - R10 REQUIREMENTS VERIFIED!' message with an accurate summary
+  that does not claim R08/R09 were established by the functional script.
+- server/services/database/ManagementOfDatabase.js: added
+  executeTradeSettlement() which wraps trade creation, both instruction
+  updates, and both account settlements in a single Mongoose session
+  transaction (R06/R11 concurrency review), falling back to sequential
+  writes with a one-time warning on standalone (non-replica-set) MongoDB
+  deployments that don't support transactions.
+- server/services/dealing/ManagementOfDealing.js: matching engine now uses
+  executeTradeSettlement() instead of separate unguarded writes per trade.
+- README.md: updated Quick Start, R06/R08/R09 status descriptions, and
+  added a section documenting the trade-settlement transaction behavior,
+  so the documentation matches the actual code.
+
+No R01-R10 functional behavior was changed; MongoDB remains the only
+persistent store. Automated functional verification, R08/R09 evaluation,
+concurrency load testing, and baseline freeze are still to be performed
+by the student.
+---
+ README.md                                     | 63 ++++++++++++++---
+ package.json                                  |  3 +-
+ server/config/config.js                       |  7 ++
+ .../services/database/ManagementOfDatabase.js | 70 +++++++++++++++++--
+ .../services/dealing/ManagementOfDealing.js   | 54 +++++++-------
+ server/test/systemVerification.js             |  6 +-
+ vite.config.js                                | 45 +++---------
+ 7 files changed, 169 insertions(+), 79 deletions(-)
+
+diff --git a/README.md b/README.md
+index 44e09f9..2e7551f 100644
+--- a/README.md
++++ b/README.md
+@@ -38,10 +38,10 @@ The Central Trading System provides automated order pretreatment, continuous dou
+ | **R03** | Matching Mechanism | `ManagementOfDealing.js`. Price-First then Time-First priority. Partial matching supported. |
+ | **R04** | Price Limits | Checked in Pretreatment. Manager configures via `PATCH /api/stocks/:id/limits`. |
+ | **R05** | Outdated Instructions | Background sweeper + manual `POST /api/manager/outdated-sweep`. |
+-| **R06** | Fund Freezing | Atomic MongoDB `$inc` operations for concurrency safety. |
++| **R06** | Fund Freezing | Atomic MongoDB `$inc` operations for concurrency-safe freeze/release. Trade settlement (trade record + both instruction updates + both account updates) is applied as a single MongoDB transaction where the deployment supports one (replica set / Atlas); see Section 6 below. |
+ | **R07** | Query Interface | `GET /api/queries/user` and `GET /api/queries/stock`. |
+-| **R08** | Capacity-Conscious | Async Node.js, reusable MongoDB connection, indexed queries, pagination, centralized error handling. |
+-| **R09** | Maintainability | Modular services, controllers, routes, Mongoose models following SRS CRC structure. |
++| **R08** | Capacity-Conscious | Async Node.js, reusable MongoDB connection, indexed queries (see Mongoose schemas in `server/models/`), centralized error handling. Capacity-conscious implementation; final acceptance requires targeted runtime evaluation because the SRS does not specify a numerical capacity threshold. |
++| **R09** | Maintainability | Modular services, controllers, routes, Mongoose models following SRS CRC structure (see Section 7). |
+ | **R10** | Authorization | JWT auth + role middleware. `USER` and `SYSTEM_MANAGER` roles enforced on backend. |
+ 
+ ---
+@@ -86,22 +86,45 @@ and the application will NOT start.
+ 
+ ## 4. Quick Start
+ 
++The frontend (Vite) and backend (Express) run as two separate processes in
++development. The frontend calls the backend at `/api`, which the Vite dev
++server proxies to `http://localhost:3000`.
++
++```text
++Frontend: Vite       → http://localhost:5173
++Backend:  Express    → http://localhost:3000  (MongoDB required)
++Frontend → Backend:  /api  (proxied by Vite to http://localhost:3000)
++```
++
+ ```bash
+ # 1. Install dependencies
+ npm install
+ 
+ # 2. Configure environment
+ cp .env.example .env
+-# Edit .env and set your MONGODB_URI
++# Edit .env and set your MONGODB_URI (and JWT_SECRET if desired)
+ 
+-# 3. Start in development mode (frontend + backend)
+-npm run dev
+-
+-# 4. Or start production backend only
++# 3. Terminal 1 — start the backend (connects to MongoDB, seeds demo data,
++#    starts the outdated-instruction sweeper, and serves the API on :3000)
+ npm start
++# or, to auto-restart the backend on file changes during development:
++npm run dev:server
++
++# 4. Terminal 2 — start the frontend dev server
++npm run dev
+ 
+ # 5. Open browser
+-# http://localhost:3000
++# http://localhost:5173
++```
++
++The database is seeded automatically the first time the backend starts —
++there is no separate seed command to run.
++
++For a production-style run (single process, pre-built frontend):
++
++```bash
++npm run build   # builds the frontend into dist/
++npm start       # serves the built frontend and the API together on :3000
+ ```
+ 
+ ---
+@@ -128,10 +151,30 @@ npm start
+ ## 6. Verification & Testing
+ 
+ ```bash
+-# Run the automated end-to-end verification suite (requires server running)
++# Requires the backend to be running (npm start) on port 3000
+ node server/test/systemVerification.js
+ ```
+ 
++This script executes automated functional scenarios covering R01–R07 and R10
++against a running instance. It does **not** establish R08 (capacity) or R09
++(maintainability) — those require separate evaluation (runtime/load testing
++and SonarQube/code inspection respectively), as described in Section 2.
++
++### Trade settlement transaction (R06 concurrency)
++
++`ManagementOfDatabase.executeTradeSettlement()` wraps trade creation,
++instruction updates, and account settlement in a single Mongoose session
++transaction, so a mid-way failure does not leave the database with a trade
++recorded but funds unsettled (or vice versa). MongoDB transactions require a
++replica set (a local single-node replica set works fine for development, as
++does MongoDB Atlas). If the connected MongoDB is a plain standalone `mongod`,
++transactions are not available; the same writes are applied sequentially
++instead, and a one-time warning is logged. Concurrency behavior under load
++still needs to be exercised by the student as part of formal testing — this
++change makes the implementation correct-by-construction on a
++transaction-capable deployment, it does not itself constitute proof that
++concurrency has been tested.
++
+ ---
+ 
+ ## 7. Project Structure
+diff --git a/package.json b/package.json
+index 6523775..b12588f 100644
+--- a/package.json
++++ b/package.json
+@@ -4,7 +4,8 @@
+   "version": "0.0.0",
+   "type": "module",
+   "scripts": {
+-    "dev": "vite --port=3000 --host=0.0.0.0",
++    "dev": "vite",
++    "dev:server": "node --watch server/server.js",
+     "build": "vite build",
+     "preview": "vite preview",
+     "clean": "rm -rf dist",
+diff --git a/server/config/config.js b/server/config/config.js
+index 7ef41cd..8bf4210 100644
+--- a/server/config/config.js
++++ b/server/config/config.js
+@@ -1,3 +1,10 @@
++import dotenv from 'dotenv';
++
++// Load variables from a local .env file (if present) into process.env.
++// Safe to call in every entry point (backend server, tests, etc.) — it
++// never overrides variables that are already set in the real environment.
++dotenv.config();
++
+ // Validate required MONGODB_URI at import time
+ if (!process.env.MONGODB_URI) {
+   console.error(
+diff --git a/server/services/database/ManagementOfDatabase.js b/server/services/database/ManagementOfDatabase.js
+index d68649e..03f7c4f 100644
+--- a/server/services/database/ManagementOfDatabase.js
++++ b/server/services/database/ManagementOfDatabase.js
+@@ -116,17 +116,22 @@ class ManagementOfDatabase {
+ 
+   /** Settle trade funds between buyer and seller. */
+   async settleTradeFunds(buyerUserId, sellerUserId, executedAmount, respectedAmount) {
++    return this._settleTradeFunds(buyerUserId, sellerUserId, executedAmount, respectedAmount, null);
++  }
++
++  async _settleTradeFunds(buyerUserId, sellerUserId, executedAmount, respectedAmount, session) {
+     const exec = Number(executedAmount);
+     const resp = Number(respectedAmount || executedAmount);
+     const refund = resp - exec;
++    const opts = session ? { session } : {};
+     await Account.findOneAndUpdate({ userId: buyerUserId }, {
+       $inc: { totalBalance: -exec, frozenBalance: -resp, availableBalance: refund > 0 ? refund : 0 },
+       $set: { updatedAt: new Date() }
+-    });
++    }, opts);
+     await Account.findOneAndUpdate({ userId: sellerUserId }, {
+       $inc: { totalBalance: exec, availableBalance: exec },
+       $set: { updatedAt: new Date() }
+-    });
++    }, opts);
+   }
+ 
+   // --- STOCK OPERATIONS ---
+@@ -193,7 +198,7 @@ class ManagementOfDatabase {
+   }
+ 
+   // --- TRADE OPERATIONS ---
+-  async insertTrade(trade) {
++  async insertTrade(trade, session = null) {
+     const id = trade.id || `TRD-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+     const record = {
+       id, _id: id,
+@@ -202,10 +207,67 @@ class ManagementOfDatabase {
+       stockId: trade.stockId, quantity: Number(trade.quantity),
+       price: Number(trade.price), timestamp: trade.timestamp || new Date().toISOString()
+     };
+-    await Trade.create(record);
++    await Trade.create([record], session ? { session } : {});
+     return record;
+   }
+ 
++  /**
++   * Execute a full trade settlement (R06/R11 concurrency review) as a single unit:
++   * insert the trade record, update both matched instructions, and settle both
++   * accounts.
++   *
++   * Uses a MongoDB (Mongoose) session transaction so that if any one write fails,
++   * none of the writes are applied — preventing partially-completed financial
++   * state (e.g. a trade recorded without the corresponding fund settlement).
++   *
++   * Transactions require a MongoDB replica set (or mongodb+srv Atlas cluster);
++   * a standalone `mongod` does not support them. If the connected deployment
++   * does not support transactions, this falls back to applying the same writes
++   * sequentially (matching the previous behavior) and logs a one-time warning,
++   * rather than crashing the trading engine.
++   */
++  async executeTradeSettlement({ trade, buyInstructionId, buyUpdate, sellInstructionId, sellUpdate, buyerUserId, sellerUserId, executedAmount, respectedAmount }) {
++    const session = await mongoose.startSession();
++    try {
++      let tradeRecord;
++      await session.withTransaction(async () => {
++        tradeRecord = await this.insertTrade(trade, session);
++        await Instruction.findOneAndUpdate(
++          { id: buyInstructionId },
++          { $set: { ...buyUpdate, updatedAt: new Date().toISOString() } },
++          { session }
++        );
++        await Instruction.findOneAndUpdate(
++          { id: sellInstructionId },
++          { $set: { ...sellUpdate, updatedAt: new Date().toISOString() } },
++          { session }
++        );
++        await this._settleTradeFunds(buyerUserId, sellerUserId, executedAmount, respectedAmount, session);
++      });
++      return tradeRecord;
++    } catch (err) {
++      const transactionsUnsupported = /Transaction numbers are only allowed on a replica set member|IllegalOperation|Transactions are not supported/i.test(err.message || '');
++      if (!transactionsUnsupported) {
++        throw err;
++      }
++      if (!this._warnedNoTransactions) {
++        console.warn(
++          '[ManagementOfDatabase] MongoDB transactions are not supported by this deployment ' +
++          '(standalone mongod, not a replica set). Falling back to sequential writes for trade ' +
++          'settlement; cross-document atomicity is not guaranteed on this deployment.'
++        );
++        this._warnedNoTransactions = true;
++      }
++      const tradeRecord = await this.insertTrade(trade);
++      await this.updateInstruction(buyInstructionId, buyUpdate);
++      await this.updateInstruction(sellInstructionId, sellUpdate);
++      await this._settleTradeFunds(buyerUserId, sellerUserId, executedAmount, respectedAmount);
++      return tradeRecord;
++    } finally {
++      await session.endSession();
++    }
++  }
++
+   async getAllTrades() { return await Trade.find().lean(); }
+   async getTradesByStockId(stockId) {
+     const q = stockId ? stockId.toUpperCase() : '';
+diff --git a/server/services/dealing/ManagementOfDealing.js b/server/services/dealing/ManagementOfDealing.js
+index f5382b6..f1b2ca7 100644
+--- a/server/services/dealing/ManagementOfDealing.js
++++ b/server/services/dealing/ManagementOfDealing.js
+@@ -110,41 +110,37 @@ class ManagementOfDealing {
+           const buyerRespectedUnit = bestBuy.respectedPrice;
+           const buyerRespectedTotal = tradeQuantity * buyerRespectedUnit;
+ 
+-          // Record Trade
+-          const tradeRecord = await dbManager.insertTrade({
+-            buyInstructionId: bestBuy.id,
+-            sellInstructionId: bestSell.id,
+-            buyerUserId: bestBuy.userId,
+-            sellerUserId: bestSell.userId,
+-            stockId: currentStock,
+-            quantity: tradeQuantity,
+-            price: executionPrice,
+-            timestamp: tradeTimestamp
+-          });
+-
+-          // Update buyer instruction
++          // Compute post-trade instruction states
+           bestBuy.remainingQuantity -= tradeQuantity;
+           const buyerNewStatus = bestBuy.remainingQuantity === 0 ? 'TOTALLY_FINISHED' : 'PARTIALLY_FINISHED';
+-          await dbManager.updateInstruction(bestBuy.id, {
+-            remainingQuantity: bestBuy.remainingQuantity,
+-            status: buyerNewStatus
+-          });
+ 
+-          // Update seller instruction
+           bestSell.remainingQuantity -= tradeQuantity;
+           const sellerNewStatus = bestSell.remainingQuantity === 0 ? 'TOTALLY_FINISHED' : 'PARTIALLY_FINISHED';
+-          await dbManager.updateInstruction(bestSell.id, {
+-            remainingQuantity: bestSell.remainingQuantity,
+-            status: sellerNewStatus
+-          });
+ 
+-          // Settle Security Account balances (R06 Fund Freezing and settlement)
+-          await dbManager.settleTradeFunds(
+-            bestBuy.userId,
+-            bestSell.userId,
+-            executionTotal,
+-            buyerRespectedTotal
+-          );
++          // Record the trade, update both instructions, and settle both accounts as a
++          // single unit (R06/R11 concurrency review) — a MongoDB transaction is used
++          // when the deployment supports one, so no partial financial state is left
++          // behind if one of these writes fails.
++          const tradeRecord = await dbManager.executeTradeSettlement({
++            trade: {
++              buyInstructionId: bestBuy.id,
++              sellInstructionId: bestSell.id,
++              buyerUserId: bestBuy.userId,
++              sellerUserId: bestSell.userId,
++              stockId: currentStock,
++              quantity: tradeQuantity,
++              price: executionPrice,
++              timestamp: tradeTimestamp
++            },
++            buyInstructionId: bestBuy.id,
++            buyUpdate: { remainingQuantity: bestBuy.remainingQuantity, status: buyerNewStatus },
++            sellInstructionId: bestSell.id,
++            sellUpdate: { remainingQuantity: bestSell.remainingQuantity, status: sellerNewStatus },
++            buyerUserId: bestBuy.userId,
++            sellerUserId: bestSell.userId,
++            executedAmount: executionTotal,
++            respectedAmount: buyerRespectedTotal
++          });
+ 
+           // Log execution (SRS CRC Card: Log results of business)
+           await dbManager.insertLog('TRADE_EXECUTED', {
+diff --git a/server/test/systemVerification.js b/server/test/systemVerification.js
+index fa4b7d9..a68d8a6 100644
+--- a/server/test/systemVerification.js
++++ b/server/test/systemVerification.js
+@@ -284,8 +284,12 @@ async function runTests() {
+   console.log('  PASSED: Trading operations resumed successfully.\n');
+ 
+   console.log('========================================');
+-  console.log(' ALL R01 - R10 REQUIREMENTS VERIFIED!   ');
++  console.log(' AUTOMATED FUNCTIONAL VERIFICATION COMPLETED');
+   console.log('========================================');
++  console.log('R01-R07 and R10 automated functional scenarios were executed.\n');
++  console.log('R08 Capacity and R09 Maintainability require separate quality');
++  console.log('evaluation using the methods specified by the SE3002 assignment');
++  console.log('(e.g. runtime/load evaluation for R08, SonarQube/code inspection for R09).');
+ }
+ 
+ runTests().catch(err => {
+diff --git a/vite.config.js b/vite.config.js
+index d67f9bc..607a6a3 100644
+--- a/vite.config.js
++++ b/vite.config.js
+@@ -3,48 +3,19 @@ import react from '@vitejs/plugin-react';
+ import path from 'path';
+ import { fileURLToPath } from 'url';
+ import { defineConfig } from 'vite';
+-import dotenv from 'dotenv';
+-
+-// Load .env for dev server so MONGODB_URI is available before config.js validates
+-dotenv.config();
+ 
+ const __filename = fileURLToPath(import.meta.url);
+ const __dirname = path.dirname(__filename);
+ 
++// Dev architecture:
++//   Frontend -> Vite dev server on port 5173
++//   Backend  -> Express server (server/server.js) on port 3000, started separately (`npm start`)
++//   The frontend calls the backend at /api, proxied by Vite to http://localhost:3000
+ export default defineConfig(() => {
+   return {
+     plugins: [
+       react(),
+       tailwindcss(),
+-      {
+-        name: 'cts-api-middleware',
+-        async configureServer(server) {
+-          // Dynamically import server modules after dotenv is loaded
+-          const { app } = await import('./server/app.js');
+-          const dbManager = (await import('./server/services/database/ManagementOfDatabase.js')).default;
+-          const { seedDatabase } = await import('./server/seed/seedData.js');
+-          const { startOutdatedInstructionJob } = await import('./server/jobs/outdatedInstructionJob.js');
+-
+-          // Connect to MongoDB (required — no fallback)
+-          try {
+-            await dbManager.connectMongo();
+-            await seedDatabase(false);
+-            startOutdatedInstructionJob();
+-          } catch (err) {
+-            console.error('[CTS Vite Dev] FATAL: MongoDB connection failed:', err.message);
+-            console.error('[CTS Vite Dev] The application requires MongoDB. Please set MONGODB_URI and ensure MongoDB is running.');
+-            process.exit(1);
+-          }
+-
+-          server.middlewares.use((req, res, next) => {
+-            if (req.url && req.url.startsWith('/api')) {
+-              app(req, res, next);
+-            } else {
+-              next();
+-            }
+-          });
+-        }
+-      }
+     ],
+     resolve: {
+       alias: {
+@@ -52,8 +23,14 @@ export default defineConfig(() => {
+       },
+     },
+     server: {
+-      port: 3000,
++      port: 5173,
+       host: '0.0.0.0',
++      proxy: {
++        '/api': {
++          target: 'http://localhost:3000',
++          changeOrigin: true,
++        },
++      },
+       hmr: process.env.DISABLE_HMR !== 'true',
+       watch: process.env.DISABLE_HMR === 'true' ? null : {},
+     },
+-- 
+2.43.0
+
