@@ -12,6 +12,7 @@
     "lint": "echo 'verified'",
     "test": "node server/test/systemVerification.js",
     "test:deep": "node server/test/r03_r06_deepVerification.js",
+    "test:full": "node server/test/fullSystemVerification.js",
     "start": "node server/server.js"
   },
   "dependencies": {
