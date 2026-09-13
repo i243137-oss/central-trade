@@ -82,7 +82,7 @@ class PretreatmentOfInstruction {
     let frozenAmount = 0;
     if (type === 'BUY') {
       const requiredFunds = Math.round(numQty * numPrice * 100) / 100;
-      // Execute atomic fund check and freeze under mutex
+      // Atomic fund check-and-freeze via MongoDB's $inc/$gte guard (no application-level mutex)
       try {
         await dbManager.freezeFunds(userId, requiredFunds);
         frozenAmount = requiredFunds;
