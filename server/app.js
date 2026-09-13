@@ -31,13 +31,15 @@ export function createApp() {
   });
 
   // Health check
-  app.get('/api/health', (req, res) => {
+  app.get('/api/health', async (req, res) => {
+    let suspended = false;
+    try { suspended = await dbManager.isOperationsSuspended(); } catch (_) { /* ignore */ }
     res.json({
       status: 'OK',
       system: 'Central Trading System (CTS)',
       version: '1.0 (2007 SRS Specification)',
       timestamp: new Date().toISOString(),
-      operationsSuspended: dbManager.isOperationsSuspended()
+      operationsSuspended: suspended
     });
   });
 

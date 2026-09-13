@@ -1,6 +1,16 @@
 # Central Trading System (CTS) — MERN Implementation
 
-An academic, production-grade implementation of the **Central Trading System (CTS)** based on the 2007 Software Requirements Specification (SRS Version 1.0) for **SE3002: Software Quality Engineering (Assignment #01)**.
+An academic implementation of the **Central Trading System (CTS)** based on the 2007 Software Requirements Specification (SRS Version 1.0) for **SE3002: Software Quality Engineering (Assignment #01)**.
+
+---
+
+## Database
+
+**MongoDB with Mongoose**
+
+MongoDB is the only persistent database supported by the application. The application does not fall back to JSON or file-based storage when MongoDB is unavailable.
+
+If MongoDB cannot be reached, the application reports a clear connection error and does not start.
 
 ---
 
@@ -10,51 +20,93 @@ The Central Trading System provides automated order pretreatment, continuous dou
 
 ### Architecture Mapping to 2007 SRS CRC Cards
 
-The backend codebase directly reflects the object-oriented structure specified in **SRS Section 6 (CRC Index Cards)**:
-
 | SRS CRC Class | Module File | Core Responsibility |
 | :--- | :--- | :--- |
 | **PretreatmentOfInstruction** | `server/services/pretreatment/PretreatmentOfInstruction.js` | Parameter legality checks, Rising/Falling limits validation (R04), Atomic buyer fund freezing (R06), Logging. |
 | **ManagementOfInstruction** | `server/services/instruction/ManagementOfInstruction.js` | Adding instructions, order cancellation with exception handling (R02), searching, sweeping outdated instructions (R05). |
 | **ManagementOfDealing** | `server/services/dealing/ManagementOfDealing.js` | Price-first / Time-first sorting, matching algorithm (R03), partial/total execution transitions, settlement trigger. |
-| **ManagementOfDatabase** | `server/services/database/ManagementOfDatabase.js` | Data access layer with Mongoose MongoDB schemas, dual-mode fallback persistence for zero-config execution. |
+| **ManagementOfDatabase** | `server/services/database/ManagementOfDatabase.js` | Data access layer with Mongoose MongoDB models. MongoDB-only persistence. |
 
 ---
 
 ## 2. Requirements Compliance (R01 – R10)
 
-| Requirement | Description | Implementation Status & Verification |
+| Req | Description | Implementation |
 | :--- | :--- | :--- |
-| **R01 — Buy/Sell Stock** | Submit trading instruction with User ID, Stock ID, Type, Quantity, Respected Price, and Timestamp. | **Fully Implemented**: `POST /api/instructions`. Validates all fields per SRS 7.1.1. |
-| **R02 — Cancel Instruction** | Cancel active instruction, handle already implemented / already cancelled exceptions, release frozen funds. | **Fully Implemented**: `PATCH /api/instructions/:id/cancel`. Releases frozen funds for BUY orders; rejects `TOTALLY_FINISHED` with `ALREADY_IMPLEMENTED`. |
-| **R03 — Matching Mechanism** | Price-First principle (highest buy, lowest sell), Time-First principle (earlier timestamp), execution rule ($P_{buy} \ge P_{sell}$). | **Fully Implemented**: `ManagementOfDealing.js`. Updates status (`PENDING` $\to$ `PARTIALLY_FINISHED` $\to$ `TOTALLY_FINISHED`), creates Trade records, settles balances. |
-| **R04 — Price Limits** | Rising Limit and Falling Limit enforcement. Instructions outside limits are rejected. | **Fully Implemented**: Checked in Pretreatment. Manager can configure limits via `PATCH /api/stocks/:id/limits`. |
-| **R05 — Outdated Instructions** | Instructions active $\ge$ 24 hours are expired, removed from matching, and buyer frozen funds released. | **Fully Implemented**: Background sweeper in `server/jobs/outdatedInstructionJob.js`. Manual trigger via `POST /api/manager/outdated-sweep`. |
-| **R06 — Fund Freezing** | Atomic balance freeze on BUY instructions. Available balance reduced, frozen balance increased. Settle or release. | **Fully Implemented**: `ManagementOfDatabase.freezeFunds`, `releaseFrozenFunds`, `settleTradeFunds`. Price improvements refunded. |
-| **R07 — Query Interface** | Structuralized query interface for User trade info and Stock trade info. | **Fully Implemented**: `GET /api/queries/user` and `GET /api/queries/stock` per SRS 7.1.1(c) & 7.1.2. |
-| **R08 — Capacity and Overhead** | System responsiveness, audit log capping (max 2000 entries), indexed queries. | **Fully Implemented**: High-performance in-memory caching + capped logs + MongoDB indexing. |
-| **R09 — Modularity & Maintainability** | Clean separation of concerns matching SRS CRC cards and DFD diagrams. | **Fully Implemented**: Modular services, controllers, routes, and Mongoose models. |
-| **R10 — Role-Based Authorization** | `USER` and `SYSTEM_MANAGER` roles. Strict RBAC enforcement. | **Fully Implemented**: `server/middleware/auth.js`. System manager controls protected endpoints (`/api/manager/*`). |
+| **R01** | Buy/Sell Stock | `POST /api/instructions`. Validates all fields per SRS 7.1.1. |
+| **R02** | Cancel Instruction | `PATCH /api/instructions/:id/cancel`. Releases frozen funds for BUY orders. |
+| **R03** | Matching Mechanism | `ManagementOfDealing.js`. Price-First then Time-First priority. Partial matching supported. |
+| **R04** | Price Limits | Checked in Pretreatment. Manager configures via `PATCH /api/stocks/:id/limits`. |
+| **R05** | Outdated Instructions | Background sweeper + manual `POST /api/manager/outdated-sweep`. |
+| **R06** | Fund Freezing | Atomic MongoDB `$inc` operations for concurrency safety. |
+| **R07** | Query Interface | `GET /api/queries/user` and `GET /api/queries/stock`. |
+| **R08** | Capacity-Conscious | Async Node.js, reusable MongoDB connection, indexed queries, pagination, centralized error handling. |
+| **R09** | Maintainability | Modular services, controllers, routes, Mongoose models following SRS CRC structure. |
+| **R10** | Authorization | JWT auth + role middleware. `USER` and `SYSTEM_MANAGER` roles enforced on backend. |
 
 ---
 
-## 3. Database Architecture (MERN with Resilient Fallback)
+## 3. MongoDB Setup
 
-- **Mongoose Models**: Defined in `server/models/`:
-  - `User.js` — User authentication and role assignment
-  - `Account.js` — Security account balance and frozen funds tracking
-  - `Stock.js` — Stock symbols with Rising & Falling limits
-  - `Instruction.js` — Order book instructions with compound indexes
-  - `Trade.js` — Execution records
-  - `Log.js` — Audit trail
-  - `SystemConfig.js` — Trading suspension state
-- **Connectivity**: Connects to `process.env.MONGODB_URI` (default: `mongodb://localhost:27017/cts`). If MongoDB is not running locally or in a sandbox container, CTS automatically operates using its file-backed persistent store (`data/cts_database.json`) to guarantee 100% immediate runnability without unhandled exceptions.
+### Option A: Local MongoDB
+
+1. Install MongoDB Community Edition: https://www.mongodb.com/try/download/community
+2. Start MongoDB:
+   ```bash
+   mongod --dbpath /path/to/data
+   ```
+3. Set environment variable:
+   ```bash
+   MONGODB_URI=mongodb://localhost:27017/central-trade
+   ```
+
+### Option B: MongoDB Atlas (Cloud)
+
+1. Create a free cluster at https://cloud.mongodb.com
+2. Get your connection string
+3. Set environment variable:
+   ```bash
+   MONGODB_URI=mongodb+srv://<user>:<password>@cluster.mongodb.net/central-trade
+   ```
+
+### Verify Connection
+
+After starting the server, you should see:
+```
+[ManagementOfDatabase] Successfully connected to MongoDB at ...
+```
+
+If MongoDB is unavailable, you will see:
+```
+[CTS Server] Fatal startup error: ...
+```
+and the application will NOT start.
 
 ---
 
-## 4. Default Demonstration Accounts
+## 4. Quick Start
 
-The system seeds with the following pre-configured accounts:
+```bash
+# 1. Install dependencies
+npm install
+
+# 2. Configure environment
+cp .env.example .env
+# Edit .env and set your MONGODB_URI
+
+# 3. Start in development mode (frontend + backend)
+npm run dev
+
+# 4. Or start production backend only
+npm start
+
+# 5. Open browser
+# http://localhost:3000
+```
+
+---
+
+## 5. Default Demonstration Accounts
 
 | Role | Email | Password | Initial Balance |
 | :--- | :--- | :--- | :--- |
@@ -73,21 +125,36 @@ The system seeds with the following pre-configured accounts:
 
 ---
 
-## 5. Verification & Testing
-
-To execute the automated end-to-end verification suite testing R01 through R10:
+## 6. Verification & Testing
 
 ```bash
+# Run the automated end-to-end verification suite (requires server running)
 node server/test/systemVerification.js
 ```
 
-All 9 test suites verify:
-1. System health check
-2. Role-based authorization & token validation (R10)
-3. Price limit boundaries & rejection (R04)
-4. Fund freezing on order submission (R01, R06)
-5. Cancellation and fund release (R02, R06)
-6. Price-Time priority matching and trade settlement (R03)
-7. 24-hour outdated instruction sweep (R05)
-8. Structured query endpoints (R07)
-9. Operational suspension exception handling (SRS Section 2.2.2)
+---
+
+## 7. Project Structure
+
+```
+server/
+├── config/           # Environment and application configuration
+├── controllers/      # Express route handlers
+├── middleware/        # Authentication and authorization middleware
+├── models/           # Mongoose schemas (User, Account, Stock, Instruction, Trade, Log, SystemConfig)
+├── routes/           # Express route definitions
+├── services/
+│   ├── database/     # ManagementOfDatabase (MongoDB persistence layer)
+│   ├── dealing/      # ManagementOfDealing (matching engine)
+│   ├── instruction/  # ManagementOfInstruction (instruction lifecycle)
+│   └── pretreatment/ # PretreatmentOfInstruction (validation, limits, fund freezing)
+├── jobs/             # Background workers (outdated instruction sweep)
+├── seed/             # Database seed data
+└── test/             # System verification tests
+
+src/                  # React frontend (Vite + TailwindCSS)
+├── context/          # AuthContext
+├── layouts/          # Navbar
+├── pages/            # Dashboard, Trade, Orders, OrderBook, Trades, Query, Manager, Login, Register
+└── services/         # API client
+```

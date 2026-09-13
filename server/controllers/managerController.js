@@ -10,7 +10,7 @@ export async function getSystemOverview(req, res) {
     const instructions = await dbManager.getAllInstructions();
     const trades = await dbManager.getAllTrades();
     const logs = await dbManager.getLogs(50);
-    const operationsSuspended = dbManager.isOperationsSuspended();
+    const operationsSuspended = await dbManager.isOperationsSuspended();
 
     return res.status(200).json({
       success: true,
@@ -49,10 +49,10 @@ export async function getSystemOverview(req, res) {
 export async function toggleSuspension(req, res) {
   try {
     const { suspended } = req.body;
-    const currentState = dbManager.isOperationsSuspended();
+    const currentState = await dbManager.isOperationsSuspended();
     const newState = suspended !== undefined ? !!suspended : !currentState;
 
-    dbManager.setOperationsSuspended(newState);
+    await dbManager.setOperationsSuspended(newState);
 
     await dbManager.insertLog('SYSTEM_SUSPENSION_TOGGLED', {
       operationsSuspended: newState,

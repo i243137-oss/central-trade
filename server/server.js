@@ -8,7 +8,7 @@ import { startOutdatedInstructionJob } from './jobs/outdatedInstructionJob.js';
 
 async function startServer() {
   try {
-    // 0. Connect to MongoDB if available
+    // 0. Connect to MongoDB (required — no fallback)
     await dbManager.connectMongo();
 
     // 1. Seed database with initial academic demonstration data

@@ -59,7 +59,7 @@ class ManagementOfDealing {
    */
   async matchInstructions(stockId = null) {
     // Check if operations are suspended (SRS Exception)
-    if (dbManager.isOperationsSuspended()) {
+    if (await dbManager.isOperationsSuspended()) {
       throw new Error('Operations suspended: All trading operations are currently suspended by Trading Management System.');
     }
 

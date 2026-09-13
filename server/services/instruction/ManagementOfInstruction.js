@@ -19,7 +19,7 @@ class ManagementOfInstruction {
    */
   async addInstruction(rawInstruction) {
     // Check if operations are suspended (SRS Exception)
-    if (dbManager.isOperationsSuspended()) {
+    if (await dbManager.isOperationsSuspended()) {
       return {
         success: false,
         error: 'Operations suspended: All trading operations are currently suspended by Trading Management System.',
@@ -68,7 +68,7 @@ class ManagementOfInstruction {
    */
   async cancelInstruction(instructionId, userId = null, isManager = false) {
     // Exception 1: Operations suspended
-    if (dbManager.isOperationsSuspended()) {
+    if (await dbManager.isOperationsSuspended()) {
       return {
         success: false,
         error: 'Operations suspended: All trading operations are currently suspended by Trading Management System.',
