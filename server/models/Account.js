@@ -5,6 +5,7 @@ import mongoose from 'mongoose';
  * Implements Security Account for R06 Fund Freezing
  */
 const accountSchema = new mongoose.Schema({
+  _id: { type: String },
   id: { type: String, required: true, unique: true, index: true },
   userId: { type: String, required: true, unique: true, index: true },
   totalBalance: { type: Number, required: true, default: 0 },

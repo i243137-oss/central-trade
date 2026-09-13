@@ -5,6 +5,7 @@ import mongoose from 'mongoose';
  * Implements R03 Matching Execution Results
  */
 const tradeSchema = new mongoose.Schema({
+  _id: { type: String },
   id: { type: String, required: true, unique: true, index: true },
   buyInstructionId: { type: String, required: true, index: true },
   sellInstructionId: { type: String, required: true, index: true },

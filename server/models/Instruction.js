@@ -5,6 +5,7 @@ import mongoose from 'mongoose';
  * Implements R01 (Buy/Sell), R02 (Cancel), R05 (Outdated)
  */
 const instructionSchema = new mongoose.Schema({
+  _id: { type: String },
   id: { type: String, required: true, unique: true, index: true },
   userId: { type: String, required: true, index: true },
   stockId: { type: String, required: true, index: true },
