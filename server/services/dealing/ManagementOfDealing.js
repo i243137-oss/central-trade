@@ -34,7 +34,9 @@ class ManagementOfDealing {
         return b.respectedPrice - a.respectedPrice;
       }
       // Earlier timestamp first
-      return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
+      const timeDiff = new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
+      if (timeDiff !== 0) return timeDiff;
+      return (a.id || '').localeCompare(b.id || '');
     });
   }
 
@@ -48,7 +50,9 @@ class ManagementOfDealing {
         return a.respectedPrice - b.respectedPrice;
       }
       // Earlier timestamp first
-      return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
+      const timeDiff = new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
+      if (timeDiff !== 0) return timeDiff;
+      return (a.id || '').localeCompare(b.id || '');
     });
   }
 

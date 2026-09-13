@@ -4,7 +4,8 @@ import {
   toggleSuspension,
   triggerOutdatedSweep,
   getSystemLogs,
-  resetDatabaseData
+  resetDatabaseData,
+  setAccountBalance
 } from '../controllers/managerController.js';
 import { authenticateToken, requireRole } from '../middleware/auth.js';
 
@@ -19,5 +20,6 @@ router.post('/suspend', toggleSuspension);
 router.post('/outdated-sweep', triggerOutdatedSweep);
 router.get('/logs', getSystemLogs);
 router.post('/reset', resetDatabaseData);
+router.post('/set-balance', setAccountBalance);
 
 export default router;

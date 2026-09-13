@@ -137,3 +137,21 @@ export async function resetDatabaseData(req, res) {
     });
   }
 }
+
+export async function setAccountBalance(req, res) {
+  try {
+    const { userId, availableBalance, totalBalance } = req.body;
+    if (!userId) {
+      return res.status(400).json({ success: false, message: 'userId is required' });
+    }
+    const acc = await dbManager.updateAccount(userId, {
+      availableBalance: Number(availableBalance),
+      totalBalance: Number(totalBalance !== undefined ? totalBalance : availableBalance),
+      frozenBalance: 0
+    });
+    return res.status(200).json({ success: true, data: acc });
+  } catch (err) {
+    console.error('[managerController.setAccountBalance] Error:', err);
+    return res.status(500).json({ success: false, message: err.message, errorCode: 'SERVER_ERROR' });
+  }
+}

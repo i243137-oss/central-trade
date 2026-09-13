@@ -11,6 +11,7 @@
     "clean": "rm -rf dist",
     "lint": "echo 'verified'",
     "test": "node server/test/systemVerification.js",
+    "test:deep": "node server/test/r03_r06_deepVerification.js",
     "start": "node server/server.js"
   },
   "dependencies": {

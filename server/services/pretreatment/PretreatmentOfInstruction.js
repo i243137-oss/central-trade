@@ -81,29 +81,19 @@ class PretreatmentOfInstruction {
     // 3. Fund Freezing for BUY instructions (SRS 7.2 & CRC Card)
     let frozenAmount = 0;
     if (type === 'BUY') {
-      const requiredFunds = numQty * numPrice;
-      const account = await dbManager.findAccountByUserId(userId);
-      if (!account) {
-        return { isValid: false, error: `Security Account not found for user '${userId}'`, errorCode: 'ACCOUNT_NOT_FOUND' };
-      }
-
-      if (account.availableBalance < requiredFunds) {
-        const msg = `Insufficient funds: Available balance is $${account.availableBalance.toFixed(2)}, but required amount is $${requiredFunds.toFixed(2)}.`;
-        await dbManager.insertLog('INSTRUCTION_REJECTED', {
-          reason: 'INSUFFICIENT_FUNDS',
-          userId,
-          requiredFunds,
-          availableBalance: account.availableBalance
-        });
-        return { isValid: false, error: msg, errorCode: 'INSUFFICIENT_FUNDS' };
-      }
-
-      // Execute atomic fund freeze
+      const requiredFunds = Math.round(numQty * numPrice * 100) / 100;
+      // Execute atomic fund check and freeze under mutex
       try {
         await dbManager.freezeFunds(userId, requiredFunds);
         frozenAmount = requiredFunds;
       } catch (err) {
-        return { isValid: false, error: err.message, errorCode: 'FUND_FREEZE_FAILED' };
+        await dbManager.insertLog('INSTRUCTION_REJECTED', {
+          reason: 'INSUFFICIENT_FUNDS',
+          userId,
+          requiredFunds,
+          error: err.message
+        });
+        return { isValid: false, error: err.message, errorCode: 'INSUFFICIENT_FUNDS' };
       }
     }
 
